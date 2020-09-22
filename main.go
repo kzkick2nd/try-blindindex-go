@@ -2,15 +2,20 @@ package main
 
 import (
 	"crypto/sha256"
+	"encoding/hex"
 	"fmt"
+	"golang.org/x/crypto/bcrypt"
 )
 
 func main() {
 	h := sha256.New()
 	s := "salt"
-	k := "password"
-	i := s + k
+	p := "password"
+	i := s + p
 
 	h.Write([]byte(i))
-	fmt.Printf("%x", h.Sum(nil)[:2])
+	fmt.Println(hex.EncodeToString(h.Sum(nil)))
+
+	hash, _ := bcrypt.GenerateFromPassword([]byte(p), bcrypt.MinCost)
+	fmt.Println(string(hash))
 }
