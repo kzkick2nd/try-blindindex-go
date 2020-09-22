@@ -12,5 +12,5 @@ func main() {
 	i := s + k
 
 	h.Write([]byte(i))
-	fmt.Printf("%x", h.Sum(nil))
+	fmt.Printf("%x", h.Sum(nil)[:2])
 }
