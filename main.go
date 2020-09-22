@@ -7,6 +7,10 @@ import (
 
 func main() {
 	h := sha256.New()
-	h.Write([]byte("hello world\n"))
+	s := "salt"
+	k := "password"
+	i := s + k
+
+	h.Write([]byte(i))
 	fmt.Printf("%x", h.Sum(nil))
 }
