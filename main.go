@@ -5,18 +5,17 @@ import (
     "golang.org/x/crypto/bcrypt"
 )
 func main() {
-    for {
+	// Enter a password and generate a salted hash
+	pwd := getPwd()
+	hash := hashAndSalt(pwd)
 
-        // Enter a password and generate a salted hash
-        pwd := getPwd()
-        hash := hashAndSalt(pwd)
+	fmt.Println(hash)
 
-        // Enter the same password again and compare it with the
-        // first password entered
-        pwd2 := getPwd()
-        pwdMatch := comparePasswords(hash, pwd2)
-        fmt.Println("Passwords Match?", pwdMatch)
-    }
+	// Enter the same password again and compare it with the
+	// first password entered
+	pwd2 := getPwd()
+	pwdMatch := comparePasswords(hash, pwd2)
+	fmt.Println("Passwords Match?", pwdMatch)
 }
 func getPwd() []byte {
     // Prompt the user to enter a password
