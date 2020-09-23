@@ -5,6 +5,7 @@ import (
 	"encoding/hex"
 	"fmt"
 	"golang.org/x/crypto/bcrypt"
+	"golang.org/x/crypto/pbkdf2"
 
 	"crypto/aes"
 	"crypto/cipher"
@@ -14,14 +15,10 @@ import (
 func main() {
 	s := "salt"
 	p := "password"
-	k := []byte(s + p)
 
-	// stretch
-	for i := 0; i < 1024; i++ {
-		sum := sha256.Sum256(k)
-		k = sum[:]
-	}
-	fmt.Println(hex.EncodeToString(k))
+	// pbkdf2 stretch 2**10
+	dk := pbkdf2.Key([]byte(p), []byte(s), 1024, 32, sha256.New)
+	fmt.Println(hex.EncodeToString(dk))
 
 	// bcrypt
 	hash, _ := bcrypt.GenerateFromPassword([]byte(p), bcrypt.MinCost)
