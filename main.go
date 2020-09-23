@@ -10,7 +10,30 @@ import (
 	"crypto/aes"
 	"crypto/cipher"
 	"crypto/rand"
+
+	"database/sql"
+	_ "github.com/mattn/go-sqlite3"
+	"github.com/jmoiron/sqlx"
 )
+
+var schema = `
+DROP TABLE IF EXISTS user;
+CREATE TABLE user (
+	user_id    INTEGER PRIMARY KEY,
+    first_name VARCHAR(80)  DEFAULT '',
+    last_name  VARCHAR(80)  DEFAULT '',
+	email      VARCHAR(250) DEFAULT '',
+	password   VARCHAR(250) DEFAULT NULL
+);
+`
+
+type User struct {
+	UserID    int    `db:"user_id"`
+	FirstName string `db:"first_name"`
+	LastName  string `db:"last_name"`
+	Email     string
+	Password  sql.NullString
+}
 
 func main() {
 	s := "salt"
@@ -31,6 +54,9 @@ func main() {
     decryptedText, _ := decryptByGCM(key, cipherText)
     fmt.Printf("Decrypted Text: %v\n ", decryptedText)
 
+	// sqlite
+	db, _ := sqlx.Connect("sqlite3", "__deleteme.db")
+	db.MustExec(schema)
 }
 
 func encryptByGCM(key []byte, plainText string) ([]byte, error) {
