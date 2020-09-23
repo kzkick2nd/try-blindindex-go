@@ -12,13 +12,16 @@ import (
 )
 
 func main() {
-	h := sha256.New()
 	s := "salt"
 	p := "password"
-	i := s + p
+	k := []byte(s + p)
 
-	h.Write([]byte(i))
-	fmt.Println(hex.EncodeToString(h.Sum(nil)))
+	// stretch
+	for i := 0; i < 1024; i++ {
+		sum := sha256.Sum256(k)
+		k = sum[:]
+	}
+	fmt.Println(hex.EncodeToString(k))
 
 	hash, _ := bcrypt.GenerateFromPassword([]byte(p), bcrypt.MinCost)
 	fmt.Println(string(hash))
@@ -28,7 +31,6 @@ func main() {
 	fmt.Println(hex.EncodeToString(cipherText))
     decryptedText, _ := decryptByGCM(key, cipherText)
     fmt.Printf("Decrypted Text: %v\n ", decryptedText)
-        // Decrypted Text: 12345
 
 }
 
