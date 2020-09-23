@@ -23,9 +23,11 @@ func main() {
 	}
 	fmt.Println(hex.EncodeToString(k))
 
+	// bcrypt
 	hash, _ := bcrypt.GenerateFromPassword([]byte(p), bcrypt.MinCost)
 	fmt.Println(string(hash))
 
+	// AES GCM
 	key, _ := hex.DecodeString("6368616e676520746869732070617373776f726420746f206120736563726574")
     cipherText, _ := encryptByGCM(key, "12345")
 	fmt.Println(hex.EncodeToString(cipherText))
