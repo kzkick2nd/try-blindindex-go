@@ -1,15 +1,15 @@
 package blindindex
 
 import (
-	"fmt"
 	"encoding/hex"
+	"fmt"
 
 	"crypto/aes"
 	"crypto/cipher"
 	"crypto/rand"
 
-	"golang.org/x/crypto/pbkdf2"
 	"crypto/sha256"
+	"golang.org/x/crypto/pbkdf2"
 
 	"github.com/jmoiron/sqlx"
 	_ "github.com/mattn/go-sqlite3"
@@ -25,7 +25,7 @@ type Entity struct {
 	EntityBidx []byte `db:"entity_bidx"`
 }
 
-func InitTable() (err error){
+func InitTable() (err error) {
 	schema := `
 		DROP TABLE IF EXISTS entities;
 		CREATE TABLE entities (
@@ -40,7 +40,7 @@ func InitTable() (err error){
 	return nil
 }
 
-func SaveWithBlindIndex(plainText string) (err error){
+func SaveWithBlindIndex(plainText string) (err error) {
 	cipherText, _ := encryptByGCM(encryptionKey, plainText)
 	blindIndex, _ := calcBlindIndex([]byte(salt), []byte(plainText), truncate)
 
@@ -57,7 +57,7 @@ func SaveWithBlindIndex(plainText string) (err error){
 	return nil
 }
 
-func FindHumanByPlainText(plainText string) (err error){
+func FindHumanByPlainText(plainText string) (err error) {
 	findByEntity := []Entity{}
 	key, _ := calcBlindIndex([]byte(salt), []byte(plainText), truncate)
 
@@ -72,7 +72,7 @@ func FindHumanByPlainText(plainText string) (err error){
 	return nil
 }
 
-func UpdateByID(ID int, plainText string) (err error){
+func UpdateByID(ID int, plainText string) (err error) {
 	cipherText, _ := encryptByGCM(encryptionKey, plainText)
 	blindIndex, _ := calcBlindIndex([]byte(salt), []byte(plainText), truncate)
 
@@ -90,7 +90,7 @@ func UpdateByID(ID int, plainText string) (err error){
 	return nil
 }
 
-func DeleteByID(ID int) (err error){
+func DeleteByID(ID int) (err error) {
 	db, _ := sqlx.Connect("sqlite3", "__sqlite.db")
 	db.Exec("DELETE FROM entities WHERE id=:id", ID)
 	// TODO 削除メッセージ
