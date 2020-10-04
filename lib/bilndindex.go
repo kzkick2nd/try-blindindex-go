@@ -90,7 +90,12 @@ func UpdateByID(ID int, plainText string) (err error){
 	return nil
 }
 
-// func DeleteByID(){}
+func DeleteByID(ID int) (err error){
+	db, _ := sqlx.Connect("sqlite3", "__sqlite.db")
+	db.Exec("DELETE FROM entities WHERE id=:id", ID)
+	// TODO 削除メッセージ
+	return nil
+}
 
 // func ShowRawTable(){}
 
