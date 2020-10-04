@@ -23,6 +23,9 @@ func init() {
 }
 
 func initAction() (err error) {
-	fmt.Println("This is init command")
-	return blindindex.InitTable()
+	if err := blindindex.InitTable(); err != nil {
+		return err
+	}
+	fmt.Println("Init sqlite3 DB successfully")
+	return nil
 }

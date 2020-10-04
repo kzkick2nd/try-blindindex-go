@@ -36,7 +36,6 @@ func InitTable() (err error) {
 	`
 	db, _ := sqlx.Connect("sqlite3", "__sqlite.db")
 	db.MustExec(schema)
-
 	return nil
 }
 
@@ -63,9 +62,12 @@ func FindHumanByPlainText(plainText string) (err error) {
 	findByEntity := []Entity{}
 	db, _ := sqlx.Connect("sqlite3", "__sqlite.db")
 	db.Select(&findByEntity, "SELECT * FROM entities WHERE entity_bidx=$1", key)
+	fmt.Printf("Results: %v\n",len(findByEntity))
 	for _, v := range findByEntity {
 		plainText, _ := decryptByGCM(encryptionKey, v.Entity)
-		fmt.Println(v.ID, plainText, v.EntityBidx)
+		fmt.Printf(
+			"ID: %v\nPlainText: %v\nSavedText: %v\nSavedBidx: %v\n\n",
+			v.ID, plainText, v.Entity, v.EntityBidx)
 	}
 	// TODO ここにフィルター追加
 	return nil
@@ -91,18 +93,18 @@ func UpdateByID(ID int, plainText string) (err error) {
 func DeleteByID(ID int) (err error) {
 	db, _ := sqlx.Connect("sqlite3", "__sqlite.db")
 	db.Exec("DELETE FROM entities WHERE id=:id", ID)
-	// TODO 削除メッセージ
 	return nil
 }
 
-func ShowRowTable(){
-	fmt.Println("Raw table:")
+func ShowRowTable() (err error){
 	selectAll := []Entity{}
 	db, _ := sqlx.Connect("sqlite3", "__sqlite.db")
 	db.Select(&selectAll, "SELECT * FROM entities ORDER BY id ASC")
+	fmt.Printf("Records: %v\n",len(selectAll))
 	for _, v := range selectAll {
 		fmt.Printf("ID: %v\nEntity: %v\nBidx: %v\n\n",v.ID, v.Entity, v.EntityBidx)
 	}
+	return nil
 }
 
 func calcBlindIndex(salt []byte, plainText []byte, keyLen int) ([]byte, error) {

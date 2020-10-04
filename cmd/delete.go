@@ -24,7 +24,10 @@ func init() {
 }
 
 func deleteAction(args []string) (err error) {
-	fmt.Println("This is delete command")
 	id, _ := strconv.Atoi(args[0])
-	return blindindex.DeleteByID(id)
+	if err := blindindex.DeleteByID(id); err != nil {
+		return err
+	}
+	fmt.Println("Delete record successfully")
+	return nil
 }

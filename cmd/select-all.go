@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"fmt"
 	"github.com/spf13/cobra"
 
 	"../lib"
@@ -23,7 +22,5 @@ func init() {
 }
 
 func selectAction() (err error) {
-	fmt.Println("This is select command")
-	blindindex.ShowRowTable()
-	return nil
+	return blindindex.ShowRowTable()
 }

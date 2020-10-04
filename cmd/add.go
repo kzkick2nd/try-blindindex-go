@@ -23,6 +23,9 @@ func init() {
 }
 
 func addAction(args []string) (err error) {
-	fmt.Println("This is add command")
-	return blindindex.SaveWithBlindIndex(args[0])
+	if err := blindindex.SaveWithBlindIndex(args[0]); err != nil {
+		return err
+	}
+	fmt.Println("Create record successfully")
+	return nil
 }

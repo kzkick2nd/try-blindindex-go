@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"fmt"
 	"github.com/spf13/cobra"
 
 	"../lib"
@@ -23,6 +22,5 @@ func init() {
 }
 
 func findAction(args []string) (err error) {
-	fmt.Println("This is find command")
 	return blindindex.FindHumanByPlainText(args[0])
 }

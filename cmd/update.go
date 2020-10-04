@@ -24,8 +24,11 @@ func init() {
 }
 
 func updateAction(args []string) (err error) {
-	fmt.Println("This is update command")
 	// TODO flagの追加
 	id, _ := strconv.Atoi(args[0])
-	return blindindex.UpdateByID(id, args[1])
+	if err := blindindex.UpdateByID(id, args[1]); err != nil {
+		return err
+	}
+	fmt.Println("Update record successfully")
+	return nil
 }
