@@ -41,17 +41,5 @@ func addAction() (err error) {
 		})
 	tx.Commit()
 
-	// selectAll := []Entity{}
-	// db.Select(&selectAll, "SELECT * FROM entities ORDER BY id ASC")
-	// for _, v := range selectAll {
-	// 	fmt.Printf("%+v\n", v)
-	// }
-
-	// query := encryption.CalcBlindIndex([]byte(salt), []byte("有賀和輝"), truncate)
-	// findByEntity := []Entity{}
-	// db.Select(&findByEntity, "SELECT * FROM entities WHERE entity_bidx=$1", query)
-	// d, _ := encryption.DecryptByGCM(encryptionKey, findByEntity[0].Entity)
-	// fmt.Println(d)
-
 	return nil
 }
