@@ -21,7 +21,7 @@ var initCmd = &cobra.Command{
   Short: "",
   Long: "",
   Run: func(cmd *cobra.Command, args []string) {
-    if err := addAction(); err != nil {
+    if err := initAction(); err != nil {
         Exit(err, 1)
     }
   },
@@ -50,7 +50,7 @@ type Entity struct {
 	EntityBidx []byte `db:"entity_bidx"`
 }
 
-func addAction() (err error) {
+func initAction() (err error) {
   cipherName, _ := encryptByGCM(encryptionKey, "有賀和輝")
 	hashedName := pbkdf2.Key([]byte("有賀和輝"), []byte(salt), 1024, truncate, sha256.New)
 

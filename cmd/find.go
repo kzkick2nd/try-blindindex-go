@@ -10,10 +10,17 @@ var findCmd = &cobra.Command{
   Short: "",
   Long: "",
   Run: func(cmd *cobra.Command, args []string) {
-	fmt.Println("this is find command")
-},
+    if err := findAction(); err != nil {
+        Exit(err, 1)
+    }
+  },
 }
 
 func init() {
   rootCmd.AddCommand(findCmd)
+}
+
+func findAction() (err error) {
+  fmt.Println("This is find command")
+  return nil
 }

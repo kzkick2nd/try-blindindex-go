@@ -10,10 +10,17 @@ var deleteCmd = &cobra.Command{
   Short: "",
   Long: "",
   Run: func(cmd *cobra.Command, args []string) {
-	fmt.Println("this is delete command")
-},
+    if err := deleteAction(); err != nil {
+        Exit(err, 1)
+    }
+  },
 }
 
 func init() {
   rootCmd.AddCommand(deleteCmd)
+}
+
+func deleteAction() (err error) {
+  fmt.Println("This is delete command")
+  return nil
 }

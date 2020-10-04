@@ -10,10 +10,17 @@ var addCmd = &cobra.Command{
   Short: "",
   Long: "",
   Run: func(cmd *cobra.Command, args []string) {
-	fmt.Println("this is add command")
-},
+    if err := addAction(); err != nil {
+        Exit(err, 1)
+    }
+  },
 }
 
 func init() {
   rootCmd.AddCommand(addCmd)
+}
+
+func addAction() (err error) {
+  fmt.Println("This is add command")
+  return nil
 }
