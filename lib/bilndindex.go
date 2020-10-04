@@ -20,18 +20,18 @@ var encryptionKey, _ = hex.DecodeString("6368616e676520746869732070617373776f726
 var truncate = 16
 
 type Entity struct {
-	ID         int    `db:"id"`
-	Entity     []byte `db:"entity"`
-	EntityBidx []byte `db:"entity_bidx"`
+	ID       int    `db:"id"`
+	Text     []byte `db:"text"`
+	TextBidx []byte `db:"text_bidx"`
 }
 
 func InitTable() (err error) {
 	schema := `
 		DROP TABLE IF EXISTS entities;
 		CREATE TABLE entities (
-			id          INTEGER PRIMARY KEY,
-			entity      VARCHAR(80)  DEFAULT '',
-			entity_bidx VARCHAR(80)  DEFAULT ''
+			id        INTEGER PRIMARY KEY,
+			text      VARCHAR(80)  DEFAULT '',
+			text_bidx VARCHAR(80)  DEFAULT ''
 		);
 	`
 	db, _ := sqlx.Connect("sqlite3", "__sqlite.db")
@@ -47,10 +47,10 @@ func SaveWithBlindIndex(plainText string) (err error) {
 	db, _ := sqlx.Connect("sqlite3", "__sqlite.db")
 	tx := db.MustBegin()
 	tx.NamedExec(
-		"INSERT INTO entities (entity, entity_bidx) VALUES (:entity, :entity_bidx)",
+		"INSERT INTO entities (text, text_bidx) VALUES (:text, :text_bidx)",
 		&Entity{
-			Entity:     cipherText,
-			EntityBidx: blindIndex,
+			Text:     cipherText,
+			TextBidx: blindIndex,
 		})
 	tx.Commit()
 	return nil
@@ -61,15 +61,15 @@ func FindHumanByPlainText(plainText string) (err error) {
 
 	findByEntity := []Entity{}
 	db, _ := sqlx.Connect("sqlite3", "__sqlite.db")
-	db.Select(&findByEntity, "SELECT * FROM entities WHERE entity_bidx=$1", key)
+	db.Select(&findByEntity, "SELECT * FROM entities WHERE text_bidx=$1", key)
 	fmt.Printf("Results: %v\n",len(findByEntity))
+	// TODO ここにフィルター追加
 	for _, v := range findByEntity {
-		plainText, _ := decryptByGCM(encryptionKey, v.Entity)
+		plainText, _ := decryptByGCM(encryptionKey, v.Text)
 		fmt.Printf(
 			"ID: %v\nPlainText: %v\nSavedText: %v\nSavedBidx: %v\n\n",
-			v.ID, plainText, v.Entity, v.EntityBidx)
+			v.ID, plainText, v.Text, v.TextBidx)
 	}
-	// TODO ここにフィルター追加
 	return nil
 }
 
@@ -80,11 +80,11 @@ func UpdateByID(ID int, plainText string) (err error) {
 	db, _ := sqlx.Connect("sqlite3", "__sqlite.db")
 	tx := db.MustBegin()
 	tx.NamedExec(
-		"UPDATE entities SET entity=:entity, entity_bidx=:entity_bidx WHERE id=:id",
+		"UPDATE entities SET text=:text, text_bidx=:text_bidx WHERE id=:id",
 		&Entity{
-			ID:         ID,
-			Entity:     cipherText,
-			EntityBidx: blindIndex,
+			ID:       ID,
+			Text:     cipherText,
+			TextBidx: blindIndex,
 		})
 	tx.Commit()
 	return nil
@@ -102,7 +102,7 @@ func ShowRowTable() (err error){
 	db.Select(&selectAll, "SELECT * FROM entities ORDER BY id ASC")
 	fmt.Printf("Records: %v\n",len(selectAll))
 	for _, v := range selectAll {
-		fmt.Printf("ID: %v\nEntity: %v\nBidx: %v\n\n",v.ID, v.Entity, v.EntityBidx)
+		fmt.Printf("ID: %v\nEntity: %v\nBidx: %v\n\n",v.ID, v.Text, v.TextBidx)
 	}
 	return nil
 }
