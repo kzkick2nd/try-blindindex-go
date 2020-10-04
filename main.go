@@ -4,14 +4,15 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"fmt"
-	"golang.org/x/crypto/bcrypt"
+	// "log"
 	"golang.org/x/crypto/pbkdf2"
+	// "golang.org/x/crypto/bcrypt"
 
 	"crypto/aes"
 	"crypto/cipher"
 	"crypto/rand"
 
-	"database/sql"
+	// "database/sql"
 	_ "github.com/mattn/go-sqlite3"
 	"github.com/jmoiron/sqlx"
 )
@@ -19,44 +20,59 @@ import (
 var schema = `
 DROP TABLE IF EXISTS user;
 CREATE TABLE user (
-	user_id    INTEGER PRIMARY KEY,
-    first_name VARCHAR(80)  DEFAULT '',
-    last_name  VARCHAR(80)  DEFAULT '',
-	email      VARCHAR(250) DEFAULT '',
-	password   VARCHAR(250) DEFAULT NULL
+	id     INTEGER PRIMARY KEY,
+    name   VARCHAR(80)  DEFAULT '',
+    namebi VARCHAR(80)  DEFAULT ''
 );
 `
 
 type User struct {
-	UserID    int    `db:"user_id"`
-	FirstName string `db:"first_name"`
-	LastName  string `db:"last_name"`
-	Email     string
-	Password  sql.NullString
+	ID      int    `db:"id"`
+	Name    []byte `db:"name"`
+	NameBI  []byte `db:"namebi"`
 }
 
 func main() {
-	s := "salt"
-	p := "password"
+	salt := "salt"
+	key, _ := hex.DecodeString("6368616e676520746869732070617373776f726420746f206120736563726574")
 
 	// pbkdf2 stretch 2**10
-	dk := pbkdf2.Key([]byte(p), []byte(s), 1024, 32, sha256.New)
+	dk := pbkdf2.Key([]byte("arugakazuki@lifull.com"), []byte(salt), 1024, 8, sha256.New)
 	fmt.Println(hex.EncodeToString(dk))
 
-	// bcrypt
-	hash, _ := bcrypt.GenerateFromPassword([]byte(p), bcrypt.MinCost)
-	fmt.Println(string(hash))
-
 	// AES GCM
-	key, _ := hex.DecodeString("6368616e676520746869732070617373776f726420746f206120736563726574")
-    cipherText, _ := encryptByGCM(key, "12345")
-	fmt.Println(hex.EncodeToString(cipherText))
-    decryptedText, _ := decryptByGCM(key, cipherText)
-    fmt.Printf("Decrypted Text: %v\n ", decryptedText)
+    // cipherText, _ := encryptByGCM(key, "12345")
+	// fmt.Println(hex.EncodeToString(cipherText))
+	// decryptedText, _ := decryptByGCM(k, cipherText)
+    // fmt.Printf("Decrypted Text: %v\n ", decryptedText)
 
 	// sqlite
-	db, _ := sqlx.Connect("sqlite3", "__deleteme.db")
+	db, _ := sqlx.Connect("sqlite3", "__sqlite.db")
 	db.MustExec(schema)
+
+	cipherName, _ := encryptByGCM(key, "有賀和輝")
+	hashedName := pbkdf2.Key([]byte("有賀和輝"), []byte(salt), 1024, 16, sha256.New)
+
+	tx := db.MustBegin()
+	tx.NamedExec(
+		"INSERT INTO user (Name, NameBI) VALUES (:name, :namebi)",
+		&User{
+			Name: cipherName,
+			NameBI: hashedName,
+		})
+	tx.Commit()
+
+	selectAll := []User{}
+	db.Select(&selectAll, "SELECT * FROM user ORDER BY id ASC")
+	for _, v := range selectAll {
+		fmt.Printf("%+v\n",v)
+	}
+
+	query := pbkdf2.Key([]byte("有賀和輝"), []byte(salt), 1024, 16, sha256.New)
+	findByName := []User{}
+	db.Select(&findByName, "SELECT * FROM user WHERE namebi=$1", query)
+	d, _ := decryptByGCM(key, findByName[0].Name)
+	fmt.Println(d)
 }
 
 func encryptByGCM(key []byte, plainText string) ([]byte, error) {
