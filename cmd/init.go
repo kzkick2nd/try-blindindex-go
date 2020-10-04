@@ -1,34 +1,34 @@
 package cmd
 
 import (
-	"github.com/spf13/cobra"
 	"fmt"
+	"github.com/spf13/cobra"
 
 	"encoding/hex"
 
-	"crypto/sha256"
 	"crypto/aes"
 	"crypto/cipher"
 	"crypto/rand"
+	"crypto/sha256"
 	"golang.org/x/crypto/pbkdf2"
 
-	_ "github.com/mattn/go-sqlite3"
 	"github.com/jmoiron/sqlx"
+	_ "github.com/mattn/go-sqlite3"
 )
 
 var initCmd = &cobra.Command{
-  Use:   "init",
-  Short: "",
-  Long: "",
-  Run: func(cmd *cobra.Command, args []string) {
-    if err := initAction(); err != nil {
-        Exit(err, 1)
-    }
-  },
+	Use:   "init",
+	Short: "",
+	Long:  "",
+	Run: func(cmd *cobra.Command, args []string) {
+		if err := initAction(); err != nil {
+			Exit(err, 1)
+		}
+	},
 }
 
 func init() {
-  rootCmd.AddCommand(initCmd)
+	rootCmd.AddCommand(initCmd)
 }
 
 var schema = `
@@ -51,68 +51,74 @@ type Entity struct {
 }
 
 func initAction() (err error) {
-  cipherName, _ := encryptByGCM(encryptionKey, "有賀和輝")
+	cipherName, _ := encryptByGCM(encryptionKey, "有賀和輝")
 	hashedName := pbkdf2.Key([]byte("有賀和輝"), []byte(salt), 1024, truncate, sha256.New)
 
-  db, _ := sqlx.Connect("sqlite3", "__sqlite.db")
+	db, _ := sqlx.Connect("sqlite3", "__sqlite.db")
 	db.MustExec(schema)
 
 	tx := db.MustBegin()
 	tx.NamedExec(
 		"INSERT INTO entities (entity, entity_bidx) VALUES (:entity, :entity_bidx)",
 		&Entity{
-			Entity: cipherName,
+			Entity:     cipherName,
 			EntityBidx: hashedName,
 		})
 	tx.Commit()
 
- 	selectAll := []Entity{}
+	selectAll := []Entity{}
 	db.Select(&selectAll, "SELECT * FROM entities ORDER BY id ASC")
 	for _, v := range selectAll {
-		fmt.Printf("%+v\n",v)
+		fmt.Printf("%+v\n", v)
 	}
 
 	query := pbkdf2.Key([]byte("有賀和輝"), []byte(salt), 1024, 16, sha256.New)
 	findByEntity := []Entity{}
 	db.Select(&findByEntity, "SELECT * FROM entities WHERE entity_bidx=$1", query)
 	d, _ := decryptByGCM(encryptionKey, findByEntity[0].Entity)
-  fmt.Println(d)
+	fmt.Println(d)
 
-  return nil
+	return nil
 }
 
 func encryptByGCM(encryptionKey []byte, plainText string) ([]byte, error) {
-    block, err := aes.NewCipher(encryptionKey); if err != nil {
-        return nil, err
-    }
+	block, err := aes.NewCipher(encryptionKey)
+	if err != nil {
+		return nil, err
+	}
 
-    gcm, err := cipher.NewGCM(block); if err != nil {
-        return nil, err
-    }
+	gcm, err := cipher.NewGCM(block)
+	if err != nil {
+		return nil, err
+	}
 
-    nonce := make([]byte, gcm.NonceSize())// Unique nonce is required(NonceSize 12byte)
-    _, err = rand.Read(nonce); if err != nil {
-        return nil, err
-    }
+	nonce := make([]byte, gcm.NonceSize()) // Unique nonce is required(NonceSize 12byte)
+	_, err = rand.Read(nonce)
+	if err != nil {
+		return nil, err
+	}
 
-    cipherText := gcm.Seal(nil, nonce, []byte(plainText), nil)
-    cipherText = append(nonce, cipherText...)
+	cipherText := gcm.Seal(nil, nonce, []byte(plainText), nil)
+	cipherText = append(nonce, cipherText...)
 
-    return cipherText, nil
+	return cipherText, nil
 }
 
 func decryptByGCM(key []byte, cipherText []byte) (string, error) {
-    block, err := aes.NewCipher(key); if err != nil {
-        return "", err
-    }
-    gcm, err := cipher.NewGCM(block); if err != nil {
-        return "", err
-    }
+	block, err := aes.NewCipher(key)
+	if err != nil {
+		return "", err
+	}
+	gcm, err := cipher.NewGCM(block)
+	if err != nil {
+		return "", err
+	}
 
-    nonce := cipherText[:gcm.NonceSize()]
-    plainByte, err := gcm.Open(nil, nonce, cipherText[gcm.NonceSize():], nil); if err != nil {
-        return "", err
-    }
+	nonce := cipherText[:gcm.NonceSize()]
+	plainByte, err := gcm.Open(nil, nonce, cipherText[gcm.NonceSize():], nil)
+	if err != nil {
+		return "", err
+	}
 
-    return string(plainByte), nil
+	return string(plainByte), nil
 }
