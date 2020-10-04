@@ -5,9 +5,6 @@ import (
 	"github.com/spf13/cobra"
 
 	"../lib"
-
-	"github.com/jmoiron/sqlx"
-	_ "github.com/mattn/go-sqlite3"
 )
 
 var addCmd = &cobra.Command{
@@ -27,19 +24,5 @@ func init() {
 
 func addAction(args []string) (err error) {
 	fmt.Println("This is add command")
-
-	cipherName, _ := encryption.EncryptByGCM(encryptionKey, args[0])
-	hashedName, _ := encryption.CalcBlindIndex([]byte(salt), []byte(args[0]), truncate)
-
-	db, _ := sqlx.Connect("sqlite3", "__sqlite.db")
-	tx := db.MustBegin()
-	tx.NamedExec(
-		"INSERT INTO entities (entity, entity_bidx) VALUES (:entity, :entity_bidx)",
-		&Entity{
-			Entity:     cipherName,
-			EntityBidx: hashedName,
-		})
-	tx.Commit()
-
-	return nil
+	return blindindex.SaveWithBlindIndex(args[0])
 }
