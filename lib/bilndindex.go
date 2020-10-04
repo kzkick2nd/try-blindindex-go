@@ -17,7 +17,7 @@ import (
 
 var salt = "/k@R5S#(7iN)vzDkaUH_>v-r@C. da|Yxh`X>}w$Q6-@&3z!^&|umH^8doJv&R;}"
 var encryptionKey, _ = hex.DecodeString("6368616e676520746869732070617373776f726420746f206120736563726574")
-var truncate = 16
+var truncate = 1
 
 type Entity struct {
 	ID       int    `db:"id"`
@@ -39,7 +39,6 @@ func InitTable() (err error) {
 	return nil
 }
 
-
 func SaveWithBlindIndex(plainText string) (err error) {
 	cipherText, _ := encryptByGCM(encryptionKey, plainText)
 	blindIndex, _ := calcBlindIndex([]byte(salt), []byte(plainText), truncate)
@@ -56,19 +55,27 @@ func SaveWithBlindIndex(plainText string) (err error) {
 	return nil
 }
 
-func FindHumanByPlainText(plainText string) (err error) {
-	key, _ := calcBlindIndex([]byte(salt), []byte(plainText), truncate)
+func FindHumanByPlainText(searchText string) (err error) {
+	key, _ := calcBlindIndex([]byte(salt), []byte(searchText), truncate)
 
-	findByEntity := []Entity{}
+	findByBidx := []Entity{}
 	db, _ := sqlx.Connect("sqlite3", "__sqlite.db")
-	db.Select(&findByEntity, "SELECT * FROM entities WHERE text_bidx=$1", key)
-	fmt.Printf("Results: %v\n",len(findByEntity))
-	// TODO ここにフィルター追加
-	for _, v := range findByEntity {
-		plainText, _ := decryptByGCM(encryptionKey, v.Text)
+	db.Select(&findByBidx, "SELECT * FROM entities WHERE text_bidx=$1", key)
+
+	findByPlainText := []Entity{}
+	for _, v := range findByBidx {
+		decryptedText, _ := decryptByGCM(encryptionKey, v.Text)
+		if decryptedText == searchText {
+			findByPlainText = append(findByPlainText, v)
+		}
+	}
+
+	fmt.Printf("Results: %v\n",len(findByPlainText))
+	for _, v := range findByPlainText {
+		decryptedText, _ := decryptByGCM(encryptionKey, v.Text)
 		fmt.Printf(
-			"ID: %v\nPlainText: %v\nSavedText: %v\nSavedBidx: %v\n\n",
-			v.ID, plainText, v.Text, v.TextBidx)
+			"ID: %v\nDecrypted: %v\nSavedText: %v\nSavedBidx: %v\n\n",
+			v.ID, decryptedText, v.Text, v.TextBidx)
 	}
 	return nil
 }

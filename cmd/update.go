@@ -24,7 +24,6 @@ func init() {
 }
 
 func updateAction(args []string) (err error) {
-	// TODO flagの追加
 	id, _ := strconv.Atoi(args[0])
 	if err := blindindex.UpdateByID(id, args[1]); err != nil {
 		return err
