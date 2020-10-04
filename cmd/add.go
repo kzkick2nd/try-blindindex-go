@@ -15,7 +15,7 @@ var addCmd = &cobra.Command{
 	Short: "",
 	Long:  "",
 	Run: func(cmd *cobra.Command, args []string) {
-		if err := addAction(); err != nil {
+		if err := addAction(args); err != nil {
 			Exit(err, 1)
 		}
 	},
@@ -25,11 +25,11 @@ func init() {
 	rootCmd.AddCommand(addCmd)
 }
 
-func addAction() (err error) {
+func addAction(args []string) (err error) {
 	fmt.Println("This is add command")
 
-	cipherName, _ := encryption.EncryptByGCM(encryptionKey, "有賀和輝")
-	hashedName, _ := encryption.CalcBlindIndex([]byte(salt), []byte("有賀和輝"), truncate)
+	cipherName, _ := encryption.EncryptByGCM(encryptionKey, args[0])
+	hashedName, _ := encryption.CalcBlindIndex([]byte(salt), []byte(args[0]), truncate)
 
 	db, _ := sqlx.Connect("sqlite3", "__sqlite.db")
 	tx := db.MustBegin()

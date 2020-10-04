@@ -15,7 +15,7 @@ var findCmd = &cobra.Command{
 	Short: "",
 	Long:  "",
 	Run: func(cmd *cobra.Command, args []string) {
-		if err := findAction(); err != nil {
+		if err := findAction(args); err != nil {
 			Exit(err, 1)
 		}
 	},
@@ -25,11 +25,11 @@ func init() {
 	rootCmd.AddCommand(findCmd)
 }
 
-func findAction() (err error) {
+func findAction(args []string) (err error) {
 	fmt.Println("This is find command")
 
 	findByEntity := []Entity{}
-	key, _ := encryption.CalcBlindIndex([]byte(salt), []byte("有賀和輝"), truncate)
+	key, _ := encryption.CalcBlindIndex([]byte(salt), []byte(args[0]), truncate)
 
 	db, _ := sqlx.Connect("sqlite3", "__sqlite.db")
 	db.Select(&findByEntity, "SELECT * FROM entities WHERE entity_bidx=$1", key)
