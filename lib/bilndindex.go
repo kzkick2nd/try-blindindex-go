@@ -54,7 +54,6 @@ func SaveWithBlindIndex(plainText string) (err error){
 		})
 	tx.Commit()
 	// TODO 追加レコード内容の表示
-
 	return nil
 }
 
@@ -73,7 +72,23 @@ func FindHumanByPlainText(plainText string) (err error){
 	return nil
 }
 
-// func UpdateByID(){}
+func UpdateByID(ID int, plainText string) (err error){
+	cipherText, _ := encryptByGCM(encryptionKey, plainText)
+	blindIndex, _ := calcBlindIndex([]byte(salt), []byte(plainText), truncate)
+
+	db, _ := sqlx.Connect("sqlite3", "__sqlite.db")
+	tx := db.MustBegin()
+	tx.NamedExec(
+		"UPDATE entities SET entity=:entity, entity_bidx=:entity_bidx WHERE id=:id",
+		&Entity{
+			ID:         ID,
+			Entity:     cipherText,
+			EntityBidx: blindIndex,
+		})
+	tx.Commit()
+	// TODO 更新レコード内容の表示
+	return nil
+}
 
 // func DeleteByID(){}
 
