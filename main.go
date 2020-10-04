@@ -1,6 +1,8 @@
 package main
 
 import (
+	"./cmd"
+
 	"crypto/sha256"
 	"encoding/hex"
 	"fmt"
@@ -33,6 +35,7 @@ type User struct {
 }
 
 func main() {
+	cmd.Execute()
 	salt := "salt"
 	key, _ := hex.DecodeString("6368616e676520746869732070617373776f726420746f206120736563726574")
 
