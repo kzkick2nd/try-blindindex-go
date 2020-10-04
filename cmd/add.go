@@ -5,8 +5,6 @@ import (
 	"github.com/spf13/cobra"
 
 	"../lib"
-	"crypto/sha256"
-	"golang.org/x/crypto/pbkdf2"
 
 	"github.com/jmoiron/sqlx"
 	_ "github.com/mattn/go-sqlite3"
@@ -31,7 +29,7 @@ func addAction() (err error) {
 	fmt.Println("This is add command")
 
 	cipherName, _ := encryption.EncryptByGCM(encryptionKey, "有賀和輝")
-	hashedName := pbkdf2.Key([]byte("有賀和輝"), []byte(salt), 1024, truncate, sha256.New)
+	hashedName, _ := encryption.CalcBlindIndex([]byte(salt), []byte("有賀和輝"), truncate)
 
 	db, _ := sqlx.Connect("sqlite3", "__sqlite.db")
 	tx := db.MustBegin()
@@ -43,17 +41,17 @@ func addAction() (err error) {
 		})
 	tx.Commit()
 
-	selectAll := []Entity{}
-	db.Select(&selectAll, "SELECT * FROM entities ORDER BY id ASC")
-	for _, v := range selectAll {
-		fmt.Printf("%+v\n", v)
-	}
+	// selectAll := []Entity{}
+	// db.Select(&selectAll, "SELECT * FROM entities ORDER BY id ASC")
+	// for _, v := range selectAll {
+	// 	fmt.Printf("%+v\n", v)
+	// }
 
-	query := pbkdf2.Key([]byte("有賀和輝"), []byte(salt), 1024, 16, sha256.New)
-	findByEntity := []Entity{}
-	db.Select(&findByEntity, "SELECT * FROM entities WHERE entity_bidx=$1", query)
-	d, _ := encryption.DecryptByGCM(encryptionKey, findByEntity[0].Entity)
-	fmt.Println(d)
+	// query := encryption.CalcBlindIndex([]byte(salt), []byte("有賀和輝"), truncate)
+	// findByEntity := []Entity{}
+	// db.Select(&findByEntity, "SELECT * FROM entities WHERE entity_bidx=$1", query)
+	// d, _ := encryption.DecryptByGCM(encryptionKey, findByEntity[0].Entity)
+	// fmt.Println(d)
 
 	return nil
 }

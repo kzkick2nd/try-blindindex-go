@@ -4,7 +4,14 @@ import (
 	"crypto/aes"
 	"crypto/cipher"
 	"crypto/rand"
+
+	"golang.org/x/crypto/pbkdf2"
+	"crypto/sha256"
 )
+
+func CalcBlindIndex(salt []byte, plainText []byte, keyLen int) ([]byte, error) {
+	return pbkdf2.Key(plainText, salt, 1024, keyLen, sha256.New), nil
+}
 
 func EncryptByGCM(encryptionKey []byte, plainText string) ([]byte, error) {
 	block, err := aes.NewCipher(encryptionKey)
