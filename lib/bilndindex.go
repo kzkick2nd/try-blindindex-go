@@ -40,6 +40,7 @@ func InitTable() (err error) {
 	return nil
 }
 
+
 func SaveWithBlindIndex(plainText string) (err error) {
 	cipherText, _ := encryptByGCM(encryptionKey, plainText)
 	blindIndex, _ := calcBlindIndex([]byte(salt), []byte(plainText), truncate)
@@ -53,14 +54,13 @@ func SaveWithBlindIndex(plainText string) (err error) {
 			EntityBidx: blindIndex,
 		})
 	tx.Commit()
-	// TODO 追加レコード内容の表示
 	return nil
 }
 
 func FindHumanByPlainText(plainText string) (err error) {
-	findByEntity := []Entity{}
 	key, _ := calcBlindIndex([]byte(salt), []byte(plainText), truncate)
 
+	findByEntity := []Entity{}
 	db, _ := sqlx.Connect("sqlite3", "__sqlite.db")
 	db.Select(&findByEntity, "SELECT * FROM entities WHERE entity_bidx=$1", key)
 	for _, v := range findByEntity {
@@ -68,7 +68,6 @@ func FindHumanByPlainText(plainText string) (err error) {
 		fmt.Println(v.ID, plainText, v.EntityBidx)
 	}
 	// TODO ここにフィルター追加
-	// TODO テーブル構造で出力
 	return nil
 }
 
@@ -86,7 +85,6 @@ func UpdateByID(ID int, plainText string) (err error) {
 			EntityBidx: blindIndex,
 		})
 	tx.Commit()
-	// TODO 更新レコード内容の表示
 	return nil
 }
 
@@ -97,7 +95,15 @@ func DeleteByID(ID int) (err error) {
 	return nil
 }
 
-// func ShowRawTable(){}
+func ShowRowTable(){
+	fmt.Println("Raw table:")
+	selectAll := []Entity{}
+	db, _ := sqlx.Connect("sqlite3", "__sqlite.db")
+	db.Select(&selectAll, "SELECT * FROM entities ORDER BY id ASC")
+	for _, v := range selectAll {
+		fmt.Printf("ID: %v\nEntity: %v\nBidx: %v\n\n",v.ID, v.Entity, v.EntityBidx)
+	}
+}
 
 func calcBlindIndex(salt []byte, plainText []byte, keyLen int) ([]byte, error) {
 	return pbkdf2.Key(plainText, salt, 1024, keyLen, sha256.New), nil
