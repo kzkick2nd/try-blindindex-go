@@ -5,15 +5,15 @@ import (
 	"fmt"
 )
 
-var testCmd = &cobra.Command{
-  Use:   "test",
+var initCmd = &cobra.Command{
+  Use:   "init",
   Short: "",
   Long: "",
   Run: func(cmd *cobra.Command, args []string) {
-	fmt.Println("this is test command")
+	fmt.Println("this is init command")
 },
 }
 
 func init() {
-  rootCmd.AddCommand(testCmd)
+  rootCmd.initCommand(addCmd)
 }
