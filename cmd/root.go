@@ -2,9 +2,15 @@ package cmd
 
 import (
 	"fmt"
+	"encoding/hex"
+
 	"github.com/spf13/cobra"
 	"os"
 )
+
+var salt = "/k@R5S#(7iN)vzDkaUH_>v-r@C. da|Yxh`X>}w$Q6-@&3z!^&|umH^8doJv&R;}"
+var encryptionKey, _ = hex.DecodeString("6368616e676520746869732070617373776f726420746f206120736563726574")
+var truncate = 16
 
 var rootCmd = &cobra.Command{
 	Use:   "blindindex-sample",
