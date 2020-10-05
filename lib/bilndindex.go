@@ -45,7 +45,9 @@ func InitTable() (err error) {
 
 func SaveWithBlindIndex(plainText string) (err error) {
 	cipherText, _ := encryptByGCM(encryptionKey, plainText)
-	blindIndex, _ := calcBlindIndex([]byte(salt), []byte(plainText), truncate)
+
+	fieldName := "text"
+	blindIndex, _ := calcBlindIndex([]byte(salt + fieldName), []byte(plainText), truncate)
 
 	db, _ := sqlx.Connect("sqlite3", "__sqlite.db")
 	tx := db.MustBegin()
@@ -60,7 +62,8 @@ func SaveWithBlindIndex(plainText string) (err error) {
 }
 
 func FindHumanByPlainText(searchText string) (err error) {
-	key, _ := calcBlindIndex([]byte(salt), []byte(searchText), truncate)
+	fieldName := "text"
+	key, _ := calcBlindIndex([]byte(salt + fieldName), []byte(searchText), truncate)
 
 	findByBidx := []Entity{}
 	db, _ := sqlx.Connect("sqlite3", "__sqlite.db")
