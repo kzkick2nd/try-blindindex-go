@@ -3,6 +3,7 @@ package blindindex
 import (
 	"encoding/hex"
 	"fmt"
+	"strconv"
 
 	"crypto/aes"
 	"crypto/cipher"
@@ -13,11 +14,14 @@ import (
 
 	"github.com/jmoiron/sqlx"
 	_ "github.com/mattn/go-sqlite3"
+
+	"os"
+	_ "github.com/joho/godotenv/autoload"
 )
 
-var salt = "/k@R5S#(7iN)vzDkaUH_>v-r@C. da|Yxh`X>}w$Q6-@&3z!^&|umH^8doJv&R;}"
-var encryptionKey, _ = hex.DecodeString("6368616e676520746869732070617373776f726420746f206120736563726574")
-var truncate = 1
+var salt             = os.Getenv("SALT")
+var encryptionKey, _ = hex.DecodeString(os.Getenv("ENCRYPTION_KEY"))
+var truncate, _      = strconv.Atoi(os.Getenv("TRUNCATE"))
 
 type Entity struct {
 	ID       int    `db:"id"`
