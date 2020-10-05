@@ -62,6 +62,7 @@ func FindHumanByPlainText(searchText string) (err error) {
 	db, _ := sqlx.Connect("sqlite3", "__sqlite.db")
 	db.Select(&findByBidx, "SELECT * FROM entities WHERE text_bidx=$1", key)
 
+	fmt.Printf("Bidx matched: %v\n",len(findByBidx))
 	findByPlainText := []Entity{}
 	for _, v := range findByBidx {
 		decryptedText, _ := decryptByGCM(encryptionKey, v.Text)
@@ -123,7 +124,7 @@ func encryptByGCM(encryptionKey []byte, plainText string) ([]byte, error) {
 	gcm, _ := cipher.NewGCM(block)
 
 	nonce := make([]byte, gcm.NonceSize())
-	_, _ = rand.Read(nonce)
+	rand.Read(nonce)
 
 	cipherText := gcm.Seal(nil, nonce, []byte(plainText), nil)
 	cipherText = append(nonce, cipherText...)
